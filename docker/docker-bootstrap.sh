@@ -58,9 +58,10 @@ case "${1}" in
     flask run -p 8088 --with-threads --reload --debugger --host=0.0.0.0
     ;;
   app-gunicorn)
-    echo "Starting web app..."
-    /usr/bin/run-server.sh
-    ;;
+  echo "Starting web app..."
+  export GUNICORN_CMD_ARGS="-c /app/docker/gunicorn_conf.py"
+  /usr/bin/run-server.sh
+  ;; 
   *)
     echo "Unknown Operation!!!"
     ;;

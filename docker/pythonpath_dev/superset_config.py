@@ -113,3 +113,73 @@ try:
     )
 except ImportError:
     logger.info("Using default Docker config...")
+
+
+FEATURE_FLAGS = {"EMBEDDED_SUPERSET": True}
+
+PUBLIC_ROLE_LIKE = "Gamma"
+
+SECRET_KEY = 'FEPCuAC6AYeYAqcQlu8Bt0u5cISuibvbXknn+mBo3exfEcjjcOGMt3s+'
+SESSION_COOKIE_SAMESITE = None
+ENABLE_PROXY_FIX = True
+
+TALISMAN_ENABLED = False
+ENABLE_CORS = True
+HTTP_HEADERS={"X-Frame-Options":"ALLOWALL"} 
+ 
+# The SQLAlchemy connection string to your database backend
+# This connection defines the path to the database that stores your
+# superset metadata (slices, connections, tables, dashboards, ...).
+# Note that the connection information to connect to the datasources
+# you want to explore are managed directly in the web UI
+# The check_same_thread=false property ensures the sqlite client does not attempt
+# to enforce single-threaded access, which may be problematic in some edge cases
+
+
+# Flask-WTF flag for CSRF
+WTF_CSRF_ENABLED = True
+# Add endpoints that need to be exempt from CSRF protection
+WTF_CSRF_EXEMPT_LIST = []
+# A CSRF token that expires in 1 year
+WTF_CSRF_TIME_LIMIT = 60 * 60 * 24 * 365
+
+# Set this API key to enable Mapbox visualizations
+MAPBOX_API_KEY = ''
+
+
+from flask_appbuilder.security.views import expose
+from superset.security import SupersetSecurityManager
+from flask_appbuilder.security.manager import BaseSecurityManager
+from flask_appbuilder.security.manager import AUTH_REMOTE_USER
+from flask import  redirect, request, flash
+from flask_login import login_user
+
+# Create a custom view to authenticate the user
+AuthRemoteUserView=BaseSecurityManager.authremoteuserview
+class CustomAuthUserView(AuthRemoteUserView):
+    @expose('/login/')
+    def login(self):
+        token = request.args.get('token')
+        next = request.args.get('next')
+        sm = self.appbuilder.sm
+        session = sm.get_session
+        user = session.query(sm.user_model).filter_by(username='admin').first()
+        if token == 'b6cbcf2a-61fb-4f19-a396-393f390ef848':
+            login_user(user, remember=False, force=True)
+            if (next is not None):
+                return redirect(next)
+            else:
+                return redirect(self.appbuilder.get_url_for_index)
+        else:
+            flash('Unable to auto login', 'warning')
+            return super(CustomAuthUserView,self).login()
+
+# Create a custom Security manager that overrides the CustomAuthUserView
+class CustomSecurityManager(SupersetSecurityManager):
+    authremoteuserview = CustomAuthUserView
+
+# Use our custom authenticator
+CUSTOM_SECURITY_MANAGER = CustomSecurityManager
+
+# User remote authentication
+AUTH_TYPE = AUTH_REMOTE_USER

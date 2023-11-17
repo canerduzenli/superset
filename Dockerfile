@@ -143,3 +143,18 @@ FROM lean AS ci
 COPY --chown=superset:superset --chmod=755 ./docker/*.sh /app/docker/
 
 CMD ["/app/docker/docker-ci.sh"]
+
+FROM apache/superset
+
+# Switching to root to install the required packages
+USER root
+
+RUN pip install psycopg2
+
+RUN pip install psycopg2-binary
+
+# Switching back to using the `superset` user
+USER superset
+
+COPY --chown=superset superset_config.py /app/
+ENV SUPERSET_CONFIG_PATH /app/superset_config.py

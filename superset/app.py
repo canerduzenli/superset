@@ -25,7 +25,6 @@ from superset.initialization import SupersetAppInitializer
 
 logger = logging.getLogger(__name__)
 
-
 def create_app(superset_config_module: Optional[str] = None) -> Flask:
     app = SupersetApp(__name__)
 
@@ -41,11 +40,9 @@ def create_app(superset_config_module: Optional[str] = None) -> Flask:
 
         return app
 
-    # Make sure that bootstrap errors ALWAYS get logged
     except Exception as ex:
         logger.exception("Failed to create app")
         raise ex
-
 
 class SupersetApp(Flask):
     pass
